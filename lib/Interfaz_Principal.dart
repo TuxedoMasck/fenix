@@ -1,6 +1,6 @@
-
-import 'package:fenix/Back_interfas_Principal.dart'; // Nombre de archivo corregido a 'interfas'
+import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:fenix/Interfaz_Credencial.dart';
+import 'package:fenix/Interfaz_Cursos.dart';
 import 'package:fenix/Menu_de_opciones.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,15 +31,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
         ),
         body: const Center(
           child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (logic.usuario == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
-        body: const Center(
-          child: Text('No se pudieron cargar los datos del usuario.'),
         ),
       );
     }
@@ -94,20 +85,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Notificaciones Recientes',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            ...logic.notificaciones
-                .map((notif) => Card(
-                      child: ListTile(
-                        leading: Icon(notif.icono),
-                        title: Text(notif.titulo),
-                        subtitle: Text(notif.subtitulo),
-                      ),
-                    ))
-                .toList(),
-            const SizedBox(height: 20),
-            const Text(
               'Apartado de Cursos',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -120,7 +97,14 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
                   final curso = logic.cursos[index];
                   return CursoCard(
                     curso: curso,
-                    onPressed: () => logic.abrirCurso(context, curso),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const InterfazCursos(),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -130,11 +114,28 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               'Acceso Rápido',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 10,
               runSpacing: 10,
               alignment: WrapAlignment.center,
               children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InterfazCursos(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.school),
+                  label: const Text('Mis Cursos'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                  ),
+                ),
                 ElevatedButton.icon(
                   onPressed: () {
                     showDialog(
