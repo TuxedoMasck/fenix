@@ -1,4 +1,5 @@
 import 'package:fenix/Back_interfas_Principal.dart';
+import 'package:fenix/Interfaz_Credencial.dart';
 import 'package:fenix/Menu_de_opciones.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -41,16 +42,14 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
         actions: [
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.more_vert), // Icono de tres puntos
+              icon: const Icon(Icons.more_vert),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
               tooltip: 'Abrir menú de opciones',
             ),
           ),
         ],
       ),
-      // Menú lateral derecho
       endDrawer: const MenuOpciones(),
-      // Menú lateral izquierdo
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -82,7 +81,7 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
               'Notificaciones Recientes',
@@ -124,49 +123,54 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             Wrap(
               spacing: 10,
               runSpacing: 10,
+              alignment: WrapAlignment.center,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.description),
-                  label: const Text('Documentos'),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.asset(
+                            'assets/images/Calendario.png',
+                            fit: BoxFit.cover,
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('Cerrar'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.calendar_today),
+                  label: const Text('Calendario'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                  ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.grade),
-                  label: const Text('Calificaciones'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InterfazCredencial(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.badge),
+                  label: const Text('Credencial'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 15),
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        content: Image.asset(
-                          'assets/images/Calendario.png',
-                          fit: BoxFit.cover,
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('Cerrar'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                icon: const Icon(Icons.calendar_today),
-                label: const Text('Calendario'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                ),
-              ),
             ),
           ],
         ),
