@@ -25,9 +25,13 @@ class Curso {
 }
 
 class InterfazPrincipalLogic extends ChangeNotifier {
-  // Datos del perfil de usuario
-  Usuario _usuario = Usuario(nombre: 'Nombre de Usuario', email: 'usuario@correo.com', inicialAvatar: 'U');
-  Usuario get usuario => _usuario;
+  // Estado de carga
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
+  // Datos del perfil de usuario (ahora nullable)
+  Usuario? _usuario;
+  Usuario? get usuario => _usuario;
 
   // Lista de notificaciones
   final List<Notificacion> _notificaciones = [
@@ -52,8 +56,12 @@ class InterfazPrincipalLogic extends ChangeNotifier {
 
   // Simula la carga de datos del usuario desde un servidor
   Future<void> cargarDatosUsuario() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simular espera de red
+    _isLoading = true;
+    notifyListeners();
+
+    await Future.delayed(const Duration(seconds: 2)); // Simular espera de red
     _usuario = Usuario(nombre: 'Ricardo', email: 'ricardo@fenix.com', inicialAvatar: 'R');
+    _isLoading = false;
     notifyListeners(); // Notifica a la UI que los datos han cambiado
   }
 

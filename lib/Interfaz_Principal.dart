@@ -1,4 +1,3 @@
-
 import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +23,19 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
   Widget build(BuildContext context) {
     // Escucha los cambios en la lógica para redibujar la UI cuando sea necesario
     final logic = Provider.of<InterfazPrincipalLogic>(context);
-    final usuario = logic.usuario;
+
+    if (logic.isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Cargando...'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final usuario = logic.usuario!;
 
     return Scaffold(
       appBar: AppBar(
