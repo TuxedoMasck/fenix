@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'interfas_Principal.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: LoginPage(),
+    home: InterfazPrincipal(),
   ));
 }
