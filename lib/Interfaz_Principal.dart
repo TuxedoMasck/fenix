@@ -1,4 +1,5 @@
 import 'package:fenix/Back_interfas_Principal.dart';
+import 'package:fenix/Menu_de_opciones.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,15 +14,12 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
   @override
   void initState() {
     super.initState();
-    // Llama al método para cargar los datos cuando el widget se inicia
-    // Y le decimos que no redibuje el widget en este momento.
     Provider.of<InterfazPrincipalLogic>(context, listen: false)
         .cargarDatosUsuario();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Escucha los cambios en la lógica para redibujar la UI cuando sea necesario
     final logic = Provider.of<InterfazPrincipalLogic>(context);
 
     if (logic.isLoading) {
@@ -41,12 +39,18 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
       appBar: AppBar(
         title: const Text('Interfaz Principal'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () => logic.mostrarNotificaciones(context),
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.more_vert), // Icono de tres puntos
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              tooltip: 'Abrir menú de opciones',
+            ),
           ),
         ],
       ),
+      // Menú lateral derecho
+      endDrawer: const MenuOpciones(),
+      // Menú lateral izquierdo
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -72,11 +76,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               title: const Text('Ayuda'),
               onTap: () => logic.mostrarAyuda(context),
             ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Menú de opciones'),
-              onTap: () => logic.abrirOpciones(context),
-            ),
           ],
         ),
       ),
@@ -89,7 +88,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               'Notificaciones Recientes',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            // Construye la lista de notificaciones desde la lógica
             ...logic.notificaciones
                 .map((notif) => Card(
                       child: ListTile(
@@ -106,7 +104,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             ),
             SizedBox(
               height: 150,
-              // Construye la lista de cursos desde la lógica
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: logic.cursos.length,
@@ -143,26 +140,32 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton.icon(
-                onPressed: () => logic.mostrarCredencial(context),
-                icon: const Icon(Icons.badge),
-                label: const Text('Botón de Credencial'),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        content: Image.asset(
+                          'assets/images/Calendario.png',
+                          fit: BoxFit.cover,
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('Cerrar'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(Icons.calendar_today),
+                label: const Text('Calendario'),
                 style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Calendario',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Card(
-              child: CalendarDatePicker(
-                initialDate: logic.fechaSeleccionada,
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2030),
-                onDateChanged: (value) => logic.onDateChanged(value),
               ),
             ),
           ],
