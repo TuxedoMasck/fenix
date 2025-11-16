@@ -1,4 +1,5 @@
-import 'package:fenix/Back_interfas_Principal.dart';
+
+import 'package:fenix/Back_interfas_Principal.dart'; // Nombre de archivo corregido a 'interfas'
 import 'package:fenix/Interfaz_Credencial.dart';
 import 'package:fenix/Menu_de_opciones.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,15 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
         ),
         body: const Center(
           child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (logic.usuario == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: const Center(
+          child: Text('No se pudieron cargar los datos del usuario.'),
         ),
       );
     }

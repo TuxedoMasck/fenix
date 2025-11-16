@@ -1,3 +1,5 @@
+
+import 'package:fenix/Interfaz_PerfildeUsuario.dart';
 import 'package:flutter/material.dart';
 
 // Modelos de datos de ejemplo
@@ -71,7 +73,10 @@ class InterfazPrincipalLogic extends ChangeNotifier {
   }
 
   void navegarAPerfil(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando al perfil')));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const InterfazPerfilDeUsuario()),
+    );
   }
 
   void mostrarAyuda(BuildContext context) {
@@ -79,6 +84,7 @@ class InterfazPrincipalLogic extends ChangeNotifier {
   }
 
   void abrirOpciones(BuildContext context) {
+    // Aquí podrías navegar a una pantalla de opciones completa
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo menú de opciones')));
   }
 
