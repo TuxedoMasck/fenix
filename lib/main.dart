@@ -1,9 +1,16 @@
+import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:flutter/material.dart';
 import 'interfas_Principal.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: InterfazPrincipal(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => InterfazPrincipalLogic(),
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: InterfazPrincipal(),
+      ),
+    ),
+  );
 }

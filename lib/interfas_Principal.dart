@@ -1,20 +1,38 @@
 
+import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class InterfazPrincipal extends StatelessWidget {
+class InterfazPrincipal extends StatefulWidget {
   const InterfazPrincipal({super.key});
 
   @override
+  State<InterfazPrincipal> createState() => _InterfazPrincipalState();
+}
+
+class _InterfazPrincipalState extends State<InterfazPrincipal> {
+  @override
+  void initState() {
+    super.initState();
+    // Llama al método para cargar los datos cuando el widget se inicia
+    // Y le decimos que no redibuje el widget en este momento.
+    Provider.of<InterfazPrincipalLogic>(context, listen: false)
+        .cargarDatosUsuario();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Escucha los cambios en la lógica para redibujar la UI cuando sea necesario
+    final logic = Provider.of<InterfazPrincipalLogic>(context);
+    final usuario = logic.usuario;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Interfaz Principal'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // Lógica para mostrar notificaciones
-            },
+            onPressed: () => logic.mostrarNotificaciones(context),
           ),
         ],
       ),
@@ -22,37 +40,31 @@ class InterfazPrincipal extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const UserAccountsDrawerHeader(
-              accountName: Text("Nombre de Usuario"),
-              accountEmail: Text("usuario@correo.com"),
+            UserAccountsDrawerHeader(
+              accountName: Text(usuario.nombre),
+              accountEmail: Text(usuario.email),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Text(
-                  "U",
-                  style: TextStyle(fontSize: 40.0),
+                  usuario.inicialAvatar,
+                  style: const TextStyle(fontSize: 40.0),
                 ),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Perfil del usuario'),
-              onTap: () {
-                // Lógica para ir al perfil del usuario
-              },
+              onTap: () => logic.navegarAPerfil(context),
             ),
             ListTile(
               leading: const Icon(Icons.help),
               title: const Text('Ayuda'),
-              onTap: () {
-                // Lógica para mostrar la ayuda
-              },
+              onTap: () => logic.mostrarAyuda(context),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text('Menú de opciones'),
-              onTap: () {
-                // Lógica para el menú de opciones
-              },
+              onTap: () => logic.abrirOpciones(context),
             ),
           ],
         ),
@@ -66,29 +78,34 @@ class InterfazPrincipal extends StatelessWidget {
               'Notificaciones Recientes',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            // Aquí iría una lista de notificaciones recientes
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.warning),
-                title: Text('Notificación 1'),
-                subtitle: Text('Descripción de la notificación...'),
-              ),
-            ),
+            // Construye la lista de notificaciones desde la lógica
+            ...logic.notificaciones
+                .map((notif) => Card(
+                      child: ListTile(
+                        leading: Icon(notif.icono),
+                        title: Text(notif.titulo),
+                        subtitle: Text(notif.subtitulo),
+                      ),
+                    ))
+                .toList(),
             const SizedBox(height: 20),
             const Text(
               'Apartado de Cursos',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            // Aquí iría una lista o cuadrícula de cursos
             SizedBox(
               height: 150,
-              child: ListView(
+              // Construye la lista de cursos desde la lógica
+              child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                children: const [
-                  CursoCard(nombre: 'Curso 1'),
-                  CursoCard(nombre: 'Curso 2'),
-                  CursoCard(nombre: 'Curso 3'),
-                ],
+                itemCount: logic.cursos.length,
+                itemBuilder: (context, index) {
+                  final curso = logic.cursos[index];
+                  return CursoCard(
+                    curso: curso,
+                    onPressed: () => logic.abrirCurso(context, curso),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 20),
@@ -112,17 +129,15 @@ class InterfazPrincipal extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Lógica para la credencial
-                },
+                onPressed: () => logic.mostrarCredencial(context),
                 icon: const Icon(Icons.badge),
                 label: const Text('Botón de Credencial'),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 ),
               ),
             ),
@@ -133,10 +148,10 @@ class InterfazPrincipal extends StatelessWidget {
             ),
             Card(
               child: CalendarDatePicker(
-                initialDate: DateTime.now(),
+                initialDate: logic.fechaSeleccionada,
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2030),
-                onDateChanged: (DateTime value) {},
+                onDateChanged: (value) => logic.onDateChanged(value),
               ),
             ),
           ],
@@ -147,8 +162,10 @@ class InterfazPrincipal extends StatelessWidget {
 }
 
 class CursoCard extends StatelessWidget {
-  final String nombre;
-  const CursoCard({super.key, required this.nombre});
+  final Curso curso;
+  final VoidCallback onPressed;
+
+  const CursoCard({super.key, required this.curso, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -161,13 +178,13 @@ class CursoCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              nombre,
+              curso.nombre,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const Text('Descripción breve del curso...'),
+            Text(curso.descripcion),
             const Spacer(),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: onPressed,
               child: const Text('Ir al curso'),
             )
           ],
