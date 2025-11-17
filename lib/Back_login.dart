@@ -3,24 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthService {
   final _supabase = Supabase.instance.client;
 
-  // Inicia sesión con Supabase usando email y contraseña.
-  Future<bool> login(String email, String password) async {
+  // Devuelve un mensaje de error si falla, o null si tiene éxito.
+  Future<String?> login(String email, String password) async {
     try {
-      final response = await _supabase.auth.signInWithPassword(
+      await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-
-      // Si el usuario existe y la sesión se ha creado, el login fue exitoso.
-      return response.user != null;
+      // Si no hay excepción, el login fue exitoso.
+      return null;
     } on AuthException catch (e) {
-      // Si hay un error de autenticación (ej: credenciales inválidas), lo mostramos.
-      print('Error de autenticación: ${e.message}');
-      return false;
+      // Devuelve el mensaje de error específico de Supabase.
+      return e.message;
     } catch (e) {
       // Para cualquier otro tipo de error.
-      print('Ocurrió un error inesperado: $e');
-      return false;
+      return 'Ocurrió un error inesperado: $e';
     }
   }
 

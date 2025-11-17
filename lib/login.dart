@@ -1,6 +1,6 @@
 import 'package:fenix/Back_login.dart';
+import 'package:fenix/Interfaz_Principal.dart';
 import 'package:flutter/material.dart';
-import 'Interfaz_Principal.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController userController = TextEditingController();
@@ -27,9 +27,10 @@ class LoginPage extends StatelessWidget {
               child: TextField(
                 controller: userController,
                 decoration: InputDecoration(
-                  labelText: 'Usuario',
+                  labelText: 'Email', // El usuario ahora es el email
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.emailAddress,
               ),
             ),
             SizedBox(height: 15),
@@ -47,12 +48,13 @@ class LoginPage extends StatelessWidget {
             SizedBox(height: 25),
             ElevatedButton(
               onPressed: () async {
-                final user = userController.text;
+                final email = userController.text;
                 final pass = passController.text;
 
-                final result = await auth.login(user, pass);
+                final errorMessage = await auth.login(email, pass);
 
-                if (result) {
+                if (errorMessage == null) {
+                  // Si no hay error, navega a la pantalla principal.
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -60,9 +62,11 @@ class LoginPage extends StatelessWidget {
                     ),
                   );
                 } else {
+                  // Si hay un error, muéstralo en el SnackBar.
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Usuario o contraseña incorrectos"),
+                    SnackBar(
+                      content: Text(errorMessage), 
+                      backgroundColor: Colors.red,
                     ),
                   );
                 }
