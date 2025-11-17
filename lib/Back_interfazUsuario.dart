@@ -18,7 +18,6 @@ class PerfilUsuarioLogic extends ChangeNotifier {
     _cargarDatosUsuario();
   }
 
-  // Carga los datos iniciales del usuario desde Supabase.
   Future<void> _cargarDatosUsuario() async {
     final user = _supabase.auth.currentUser;
     if (user != null) {
@@ -29,15 +28,14 @@ class PerfilUsuarioLogic extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Permite al usuario seleccionar una imagen y la sube a Supabase Storage.
   Future<void> seleccionarYSubirFoto(BuildContext context) async {
     final picker = ImagePicker();
     final imageFile = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 600, // Limita el tamaño para optimizar la subida
+      maxWidth: 600,
     );
 
-    if (imageFile == null) return; // El usuario canceló la selección
+    if (imageFile == null) return;
 
     try {
       _isLoading = true;
@@ -47,22 +45,27 @@ class PerfilUsuarioLogic extends ChangeNotifier {
       final userId = _supabase.auth.currentUser!.id;
       final filePath = '$userId/profile.png';
 
-      // Sube la imagen. `upsert: true` reemplaza la imagen si ya existe.
       await _supabase.storage.from('profile-pictures').uploadBinary(
             filePath,
             file.readAsBytesSync(),
             fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
           );
 
-      // Obtiene la URL pública de la imagen subida.
-      final publicUrl = _supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+      // --- ¡AQUÍ ESTÁ LA MAGIA! ---
+      // 1. Obtenemos la URL base.
+      final baseUrl = _supabase.storage.from('profile-pictures').getPublicUrl(filePath);
 
-      // Actualiza los metadatos del usuario con la nueva URL.
+      // 2. Le añadimos un timestamp para hacerla única y evitar la caché.
+      final uniqueUrl = '$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}';
+
+      // 3. Guardamos la URL única en el perfil del usuario.
       await _supabase.auth.updateUser(
-        UserAttributes(data: {'avatar_url': publicUrl, 'full_name': nameController.text}),
+        UserAttributes(data: {'avatar_url': uniqueUrl, 'full_name': nameController.text}),
       );
       
-      _avatarUrl = publicUrl;
+      // 4. Actualizamos el estado local con la URL única.
+      _avatarUrl = uniqueUrl;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Foto de perfil actualizada.')),
       );
@@ -82,7 +85,6 @@ class PerfilUsuarioLogic extends ChangeNotifier {
     }
   }
 
-  // Guarda los cambios de nombre.
   Future<void> guardarCambios(BuildContext context) async {
      try {
        await _supabase.auth.updateUser(
