@@ -1,20 +1,24 @@
-
-import 'package:fenix/Back_interfas_Principal.dart';
-import 'package:fenix/Back_menu_opciones.dart';
-import 'package:fenix/login.dart'; // Importa la pantalla de login
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+import 'supabase_config.dart';
+import 'package:fenix/login.dart';
+import 'Back_interfas_Principal.dart';
+import 'Back_menu_opciones.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseConfig.initialize();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => InterfazPrincipalLogic()),
-        ChangeNotifierProvider(create: (context) => MenuOpcionesLogic()),
+        ChangeNotifierProvider(create: (_) => InterfazPrincipalLogic()),
+        ChangeNotifierProvider(create: (_) => MenuOpcionesLogic()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        // Se restaura la página de inicio a la pantalla de login
         home: LoginPage(),
       ),
     ),
