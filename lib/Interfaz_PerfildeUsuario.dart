@@ -1,4 +1,3 @@
-
 import 'package:fenix/Back_interfazUsuario.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +9,7 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PerfilUsuarioLogic(),
-      child: Consumer<PerfilUsuarioLogic>(
+      child: Consumer<PerfilUsuarioLogic>( // Consumer para reconstruir la UI con los cambios
         builder: (context, logic, child) {
           return Scaffold(
             appBar: AppBar(
@@ -24,23 +23,43 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
                   // 1. Logo de la Escuela
                   Image.asset(
                     'assets/images/UAM.png',
-                    height: 150, // Puedes ajustar la altura como necesites
+                    height: 150, 
                   ),
                   const SizedBox(height: 32),
 
-                  // 2. Foto de Perfil
+                  // 2. Foto de Perfil (Ahora conectada a Supabase)
                   Stack(
-                    alignment: Alignment.bottomRight,
+                    alignment: Alignment.center,
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 80,
                         backgroundColor: Colors.blueGrey,
-                        child: Icon(Icons.person, size: 100, color: Colors.white),
+                        // Muestra la imagen de la red si existe, si no, es null
+                        backgroundImage: logic.avatarUrl != null
+                            ? NetworkImage(logic.avatarUrl!)
+                            : null,
+                        // Muestra el icono solo si no hay imagen
+                        child: logic.avatarUrl == null && !logic.isLoading
+                            ? const Icon(Icons.person, size: 100, color: Colors.white)
+                            : null,
                       ),
-                      IconButton.filled(
-                        icon: const Icon(Icons.camera_alt),
-                        onPressed: () => logic.seleccionarNuevaFoto(context),
+                      // Botón para cambiar la foto
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: IconButton.filled(
+                          icon: const Icon(Icons.camera_alt),
+                          // Llama a la nueva función del backend
+                          onPressed: () => logic.seleccionarYSubirFoto(context),
+                        ),
                       ),
+                      // Muestra un overlay de carga mientras se sube la imagen
+                      if (logic.isLoading)
+                        const CircleAvatar(
+                          radius: 80,
+                          backgroundColor: Colors.black54,
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 24),

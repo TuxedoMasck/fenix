@@ -59,11 +59,17 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               accountName: Text(usuario.nombre),
               accountEmail: Text(usuario.email),
               currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text(
-                  usuario.inicialAvatar,
-                  style: const TextStyle(fontSize: 40.0),
-                ),
+                // Si la URL del avatar no es nula, usa la imagen de la red.
+                backgroundImage: usuario.avatarUrl != null
+                    ? NetworkImage(usuario.avatarUrl!)
+                    : null,
+                // Si no hay imagen, muestra la inicial.
+                child: usuario.avatarUrl == null
+                    ? Text(
+                        usuario.inicialAvatar,
+                        style: const TextStyle(fontSize: 40.0),
+                      )
+                    : null,
               ),
             ),
             ListTile(

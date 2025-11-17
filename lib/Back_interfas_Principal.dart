@@ -1,14 +1,21 @@
-
 import 'package:fenix/Interfaz_PerfildeUsuario.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Modelos de datos de ejemplo
+// --- Modelos de Datos ---
+
 class Usuario {
   final String nombre;
   final String email;
-  final String inicialAvatar;
+  final String? avatarUrl; // La URL de la foto puede ser nula
 
-  Usuario({required this.nombre, required this.email, required this.inicialAvatar});
+  Usuario({required this.nombre, required this.email, this.avatarUrl});
+
+  // Obtiene la inicial del nombre para mostrarla si no hay foto.
+  String get inicialAvatar {
+    if (nombre.isEmpty) return '?';
+    return nombre[0].toUpperCase();
+  }
 }
 
 class Notificacion {
@@ -26,77 +33,68 @@ class Curso {
   Curso({required this.nombre, required this.descripcion});
 }
 
+// --- Lógica de la Interfaz Principal ---
+
 class InterfazPrincipalLogic extends ChangeNotifier {
-  // Estado de carga
+  final _supabase = Supabase.instance.client;
+
   bool _isLoading = true;
   bool get isLoading => _isLoading;
 
-  // Datos del perfil de usuario (ahora nullable)
   Usuario? _usuario;
   Usuario? get usuario => _usuario;
 
-  // Lista de notificaciones
+  // La data de notificaciones y cursos sigue siendo de ejemplo por ahora.
   final List<Notificacion> _notificaciones = [
     Notificacion(titulo: 'Notificación 1', subtitulo: 'Descripción de la notificación...', icono: Icons.warning),
     Notificacion(titulo: 'Notificación 2', subtitulo: 'Otra descripción...', icono: Icons.info),
   ];
   List<Notificacion> get notificaciones => _notificaciones;
 
-  // Lista de cursos
   final List<Curso> _cursos = [
     Curso(nombre: 'Curso 1', descripcion: 'Descripción breve del curso...'),
     Curso(nombre: 'Curso 2', descripcion: 'Descripción breve del curso...'),
-    Curso(nombre: 'Curso 3', descripcion: 'Descripción breve del curso...'),
   ];
   List<Curso> get cursos => _cursos;
 
-  // Lógica del Calendario
-  DateTime _fechaSeleccionada = DateTime.now();
-  DateTime get fechaSeleccionada => _fechaSeleccionada;
-
-  // --- Métodos de Lógica ---
-
-  // Simula la carga de datos del usuario desde un servidor
+  // Carga los datos del usuario actual desde Supabase.
   Future<void> cargarDatosUsuario() async {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 2)); // Simular espera de red
-    _usuario = Usuario(nombre: 'Ricardo', email: 'ricardo@fenix.com', inicialAvatar: 'R');
-    _isLoading = false;
-    notifyListeners(); // Notifica a la UI que los datos han cambiado
-  }
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      final nombre = user.userMetadata?['full_name'] ?? 'Sin Nombre';
+      final email = user.email ?? 'sin.email@example.com';
+      final avatarUrl = user.userMetadata?['avatar_url'];
 
-  void onDateChanged(DateTime nuevaFecha) {
-    _fechaSeleccionada = nuevaFecha;
+      _usuario = Usuario(nombre: nombre, email: email, avatarUrl: avatarUrl);
+    } else {
+      // Fallback por si no hay usuario (aunque no debería pasar en esta pantalla).
+      _usuario = Usuario(nombre: 'Invitado', email: '');
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 
-  void navegarAPerfil(BuildContext context) {
-    Navigator.push(
+  // Navega al perfil y, al regresar, recarga los datos para reflejar cambios.
+  Future<void> navegarAPerfil(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const InterfazPerfilDeUsuario()),
     );
+    // ¡Importante! Recarga los datos al volver.
+    await cargarDatosUsuario();
   }
+
+  // --- Otros métodos de la UI (sin cambios) ---
 
   void mostrarAyuda(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mostrando ayuda')));
   }
 
   void abrirOpciones(BuildContext context) {
-    // Aquí podrías navegar a una pantalla de opciones completa
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo menú de opciones')));
-  }
-
-  void mostrarNotificaciones(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mostrando notificaciones')));
-  }
-
-  void mostrarCredencial(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mostrando credencial')));
-  }
-
-  void abrirCurso(BuildContext context, Curso curso) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Abriendo curso: ${curso.nombre}')));
   }
 }

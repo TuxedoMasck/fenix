@@ -1,65 +1,103 @@
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-// Importante: Si en el futuro usas paquetes para seleccionar imágenes (como image_picker),
-// deberás importarlos aquí.
-// import 'dart:io'; // Para manejar archivos de imagen
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PerfilUsuarioLogic extends ChangeNotifier {
-  // --- Estado ---
+  final _supabase = Supabase.instance.client;
 
-  // Controlador para el campo de texto del nombre
   late TextEditingController nameController;
+  String? _avatarUrl;
+  bool _isLoading = true;
 
-  // Variable para almacenar la imagen de perfil (actualmente es un placeholder)
-  // File? profileImage;
-
-  // --- Inicialización ---
+  String? get avatarUrl => _avatarUrl;
+  bool get isLoading => _isLoading;
 
   PerfilUsuarioLogic() {
-    // Inicializamos el controlador con un nombre de usuario de ejemplo.
-    // En una aplicación real, aquí cargarías el nombre del usuario actual.
-    nameController = TextEditingController(text: "Ricardo");
+    nameController = TextEditingController();
+    _cargarDatosUsuario();
   }
 
-  // --- Métodos (Lógica de Negocio) ---
+  // Carga los datos iniciales del usuario desde Supabase.
+  Future<void> _cargarDatosUsuario() async {
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      nameController.text = user.userMetadata?['full_name'] ?? '';
+      _avatarUrl = user.userMetadata?['avatar_url'];
+    }
+    _isLoading = false;
+    notifyListeners();
+  }
 
-  /// Simula la selección de una nueva foto de perfil.
-  Future<void> seleccionarNuevaFoto(BuildContext context) async {
-    // Aquí iría la lógica para usar un paquete como image_picker y obtener una imagen
-    // de la galería o la cámara.
-
-    // Por ahora, solo mostramos un mensaje.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Función para seleccionar foto no implementada.')),
+  // Permite al usuario seleccionar una imagen y la sube a Supabase Storage.
+  Future<void> seleccionarYSubirFoto(BuildContext context) async {
+    final picker = ImagePicker();
+    final imageFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600, // Limita el tamaño para optimizar la subida
     );
 
-    // Cuando tengas la imagen, harías algo como:
-    // final picker = ImagePicker();
-    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    // if (pickedFile != null) {
-    //   profileImage = File(pickedFile.path);
-    //   notifyListeners(); // Notifica a la UI que la imagen cambió
-    // }
+    if (imageFile == null) return; // El usuario canceló la selección
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final file = File(imageFile.path);
+      final userId = _supabase.auth.currentUser!.id;
+      final filePath = '$userId/profile.png';
+
+      // Sube la imagen. `upsert: true` reemplaza la imagen si ya existe.
+      await _supabase.storage.from('profile-pictures').uploadBinary(
+            filePath,
+            file.readAsBytesSync(),
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      // Obtiene la URL pública de la imagen subida.
+      final publicUrl = _supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+
+      // Actualiza los metadatos del usuario con la nueva URL.
+      await _supabase.auth.updateUser(
+        UserAttributes(data: {'avatar_url': publicUrl, 'full_name': nameController.text}),
+      );
+      
+      _avatarUrl = publicUrl;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto de perfil actualizada.')),
+      );
+
+    } on StorageException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al subir la imagen: ${e.message}'), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ocurrió un error inesperado: $e'), backgroundColor: Colors.red),
+      );
+    }
+    finally{
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  /// Guarda los cambios realizados en el perfil.
-  void guardarCambios(BuildContext context) {
-    final nuevoNombre = nameController.text;
-
-    // Aquí iría la lógica para enviar el `nuevoNombre` y la `profileImage`
-    // a tu servidor o base de datos.
-
-    // Mostramos una confirmación al usuario.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Cambios guardados para: $nuevoNombre')),
-    );
-
-    // Ocultamos el teclado para una mejor experiencia de usuario.
-    FocusScope.of(context).unfocus();
+  // Guarda los cambios de nombre.
+  Future<void> guardarCambios(BuildContext context) async {
+     try {
+       await _supabase.auth.updateUser(
+        UserAttributes(data: {'full_name': nameController.text}),
+      );
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nombre actualizado.')),
+      );
+     } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar el nombre: $e'), backgroundColor: Colors.red),
+      );
+     }
   }
 
-  // Es importante limpiar los controladores cuando el widget se destruye
-  // para liberar recursos.
   @override
   void dispose() {
     nameController.dispose();
