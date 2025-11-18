@@ -1,9 +1,9 @@
 import 'package:fenix/Back_login.dart';
 import 'package:fenix/Interfaz_Olvidecontrase%C3%B1a.dart';
 import 'package:fenix/Interfaz_Principal.dart';
+import 'package:fenix/Interfaz_Registro.dart';
 import 'package:flutter/material.dart';
 
-// 1. Convertido a StatefulWidget para manejar el estado de la visibilidad
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -16,7 +16,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passController = TextEditingController();
   final _auth = AuthService();
 
-  // 2. Variable para recordar si la contraseña está oculta
   bool _isPasswordHidden = true;
 
   @override
@@ -52,20 +51,17 @@ class _LoginPageState extends State<LoginPage> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 15),
-              // 3. TextField de contraseña modificado
               TextField(
                 controller: _passController,
-                obscureText: _isPasswordHidden, // Usa la variable de estado
+                obscureText: _isPasswordHidden,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   border: const OutlineInputBorder(),
-                  // 4. Icono para mostrar/ocultar
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordHidden ? Icons.visibility_off : Icons.visibility,
                     ),
                     onPressed: () {
-                      // 5. Lógica para cambiar el estado
                       setState(() {
                         _isPasswordHidden = !_isPasswordHidden;
                       });
@@ -120,6 +116,10 @@ class _LoginPageState extends State<LoginPage> {
                   const Text('¿No tienes cuenta?'),
                   TextButton(
                     onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const InterfazRegistro()),
+                      );
                     },
                     child: const Text(
                       'Registrarse',
@@ -134,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
               const Spacer(flex: 3),
               ElevatedButton(
                 onPressed: () {
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey.shade200,
