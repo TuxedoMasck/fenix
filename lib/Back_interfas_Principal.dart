@@ -1,3 +1,4 @@
+import 'package:fenix/Interfaz_Ayuda.dart';
 import 'package:fenix/Interfaz_PerfildeUsuario.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -91,10 +92,14 @@ class InterfazPrincipalLogic extends ChangeNotifier {
   // --- Otros métodos de la UI (sin cambios) ---
 
   void mostrarAyuda(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mostrando ayuda')));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const InterfazAyuda()),
+    );
   }
 
   void abrirOpciones(BuildContext context) {
+    // Aquí podrías navegar a una pantalla de opciones completa
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo menú de opciones')));
   }
 }
