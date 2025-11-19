@@ -1,8 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-// --- Modelos de Datos ---
-
 // Define si el usuario es administrador o miembro del curso.
 enum UserRole { administrador, miembro }
 
@@ -22,8 +20,6 @@ class Curso {
     required this.rol,
   });
 }
-
-// --- Lógica del Backend ---
 
 class CursosLogic extends ChangeNotifier {
   // Lista de cursos (simula una base de datos).

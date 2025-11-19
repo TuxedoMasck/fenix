@@ -2,8 +2,6 @@ import 'package:fenix/Back_cursos.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// --- Interfaz de Usuario ---
-
 class InterfazCursos extends StatelessWidget {
   const InterfazCursos({super.key});
 
@@ -68,8 +66,6 @@ class InterfazCursos extends StatelessWidget {
       ),
     );
   }
-
-  // --- Diálogos para Crear y Unirse a Cursos ---
 
   void _mostrarDialogoUnirse(BuildContext context, CursosLogic logic) {
     final controller = TextEditingController();
