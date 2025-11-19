@@ -23,5 +23,5 @@ void main() async {
         home: LoginPage(),
       ),
     ),
-  );//concre es puñals
+  );//concre es puñal
 }
