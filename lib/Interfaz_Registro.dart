@@ -72,7 +72,7 @@ class _InterfazRegistroViewState extends State<_InterfazRegistroView> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_outlined),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text('Solicitud de Registro UAM'),
@@ -100,8 +100,7 @@ class _InterfazRegistroViewState extends State<_InterfazRegistroView> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Correo institucional',
-                  helperText: 'Solo correos @uam.com o @alum.uam.mx',
-                ),
+                  helperText: '@alumnos.cua.uam.mx, @cua.uam.mx y correo.cua.uam.mx,'),
                 keyboardType: TextInputType.emailAddress,
                 validator: RegistroLogic.validateUamEmail,
               ),
@@ -117,9 +116,9 @@ class _InterfazRegistroViewState extends State<_InterfazRegistroView> {
                 decoration: const InputDecoration(labelText: 'División o departamento'),
                 validator: (v) => v!.isEmpty ? 'Campo requerido' : null,
               ),
-              //esta puta funcion no jala *revisar
+              //funcion corregida solo para pdf sin espacios
               const SizedBox(height: 24),
-              const Text('Adjuntar Credencial (PDF)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Adjuntar Credencial (PDF nombre sin espacios)', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               InkWell(
                 onTap: logic.pickPdf,

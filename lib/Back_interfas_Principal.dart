@@ -3,8 +3,6 @@ import 'package:fenix/Interfaz_PerfildeUsuario.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// --- Modelos de Datos ---
-
 class Usuario {
   final String nombre;
   final String email;
@@ -34,7 +32,7 @@ class Curso {
   Curso({required this.nombre, required this.descripcion});
 }
 
-// --- Lógica de la Interfaz Principal ---
+//Lógica de la Interfaz Principal
 
 class InterfazPrincipalLogic extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -71,7 +69,7 @@ class InterfazPrincipalLogic extends ChangeNotifier {
 
       _usuario = Usuario(nombre: nombre, email: email, avatarUrl: avatarUrl);
     } else {
-      // Fallback por si no hay usuario (aunque no debería pasar en esta pantalla).
+      // Fallback por si no hay usuario
       _usuario = Usuario(nombre: 'Invitado', email: '');
     }
 
@@ -85,11 +83,9 @@ class InterfazPrincipalLogic extends ChangeNotifier {
       context,
       MaterialPageRoute(builder: (context) => const InterfazPerfilDeUsuario()),
     );
-    // ¡Importante! Recarga los datos al volver.
+    // Importante Recarga los datos al volver.
     await cargarDatosUsuario();
   }
-
-  // --- Otros métodos de la UI (sin cambios) ---
 
   void mostrarAyuda(BuildContext context) {
     Navigator.push(

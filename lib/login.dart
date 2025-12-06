@@ -3,6 +3,7 @@ import 'package:fenix/Interfaz_Olvidecontrase%C3%B1a.dart';
 import 'package:fenix/Interfaz_Principal.dart';
 import 'package:fenix/Interfaz_Registro.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +24,75 @@ class _LoginPageState extends State<LoginPage> {
     _userController.dispose();
     _passController.dispose();
     super.dispose();
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo abrir el enlace: $urlString')),
+        );
+      }
+    }
+  }
+
+  void _showSocialMediaDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Redes Sociales'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.play_circle_outline_outlined, color: Colors.red),
+                  title: const Text('Youtube'),
+                  onTap: () {
+                    _launchUrl('https://www.youtube.com/@TuxedoMasck_1/videos');
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_outlined, color: Colors.purple),
+                  title: const Text('Instagram'),
+                  onTap: () {
+                    _launchUrl('https://www.instagram.com/tuxedomasck_el?igsh=MTE1a2RuemdrMWY5dg==');
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.tiktok_outlined, color: Colors.black87),
+                  title: const Text('Tik Tok'),
+                  onTap: () {
+                    _launchUrl('https://www.tiktok.com/@tuxedomasck_el?_r=1&_t=ZS-920B7cFbVYK');
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.wifi, color: Colors.green),
+                  title: const Text('Spotify'),
+                  onTap: () {
+                    _launchUrl('https://open.spotify.com/user/kalelconalgo?si=a972b2b4b60b4c26');
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -96,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                   minimumSize: const Size(double.infinity, 50),
                   textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                child: const Text('Entrar'),
+                child: const Text('Iniciar Sesión'),
               ),
               TextButton(
                 onPressed: () {
@@ -134,11 +204,11 @@ class _LoginPageState extends State<LoginPage> {
               const Spacer(flex: 3),
               ElevatedButton(
                 onPressed: () {
-
+                  _showSocialMediaDialog(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey.shade200,
-                  foregroundColor: Colors.black,
+                  foregroundColor: Colors.red,
                 ),
                 child: const Text('Redes Sociales'),
               ),

@@ -35,12 +35,6 @@ class MenuOpciones extends StatelessWidget {
             value: logic.areNotificationsEnabled,
             onChanged: logic.toggleNotifications,
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Cerrar Sesión'),
-            onTap: () => logic.logout(context),
-          ),
         ],
       ),
     );

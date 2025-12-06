@@ -87,9 +87,9 @@ class RegistroLogic extends ChangeNotifier {
       return 'El correo no puede estar vacío.';
     }
     // solo terminaciones escolares
-    final validEnds = ['@uam.com', '@alum.uam.mx'];
+    final validEnds = ['@cua.uam.mx', '@alumnos.cua.uam.mx', '@correo.cua.uam.mx'];
     if (!validEnds.any((end) => value.endsWith(end))) {
-      return 'Debe ser un correo @uam.com o @alum.uam.mx';
+      return 'Debe ser un correo @cua.uam.mx, @alumnos.cua.uam.mx y @correo.cua.uam.mx';
     }
     return null; // Devuelve null si la validación es exitosa
   }

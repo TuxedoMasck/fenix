@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthService {
   final _supabase = Supabase.instance.client;
@@ -20,6 +21,7 @@ class AuthService {
       return 'Ocurrió un error inesperado: $e';
     }
   }
+
 
   // Cierra la sesión del usuario actual.
   Future<void> logout() async {

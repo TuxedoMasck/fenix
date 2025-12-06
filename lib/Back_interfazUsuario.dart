@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fenix/login.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,23 +7,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class PerfilUsuarioLogic extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
 
-  late TextEditingController nameController;
   String? _avatarUrl;
+  String? _userName;
   bool _isLoading = true;
 
   String? get avatarUrl => _avatarUrl;
+  String? get userName => _userName;
   bool get isLoading => _isLoading;
 
   PerfilUsuarioLogic() {
-    nameController = TextEditingController();
-    _cargarDatosUsuario();
+    _loadUserData();
   }
 
-  Future<void> _cargarDatosUsuario() async {
+  Future<void> _loadUserData() async {
+    _isLoading = true;
+    notifyListeners();
     final user = _supabase.auth.currentUser;
     if (user != null) {
-      nameController.text = user.userMetadata?['full_name'] ?? '';
       _avatarUrl = user.userMetadata?['avatar_url'];
+      _userName = user.userMetadata?['full_name'] ?? 'Sin Nombre';
     }
     _isLoading = false;
     notifyListeners();
@@ -37,10 +40,10 @@ class PerfilUsuarioLogic extends ChangeNotifier {
 
     if (imageFile == null) return;
 
-    try {
-      _isLoading = true;
-      notifyListeners();
+    _isLoading = true;
+    notifyListeners();
 
+    try {
       final file = File(imageFile.path);
       final userId = _supabase.auth.currentUser!.id;
       final filePath = '$userId/profile.png';
@@ -51,58 +54,39 @@ class PerfilUsuarioLogic extends ChangeNotifier {
             fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
           );
 
-      // --- ¡AQUÍ ESTÁ LA MAGIA! ---
-      // 1. Obtenemos la URL base.
       final baseUrl = _supabase.storage.from('profile-pictures').getPublicUrl(filePath);
-
-      // 2. Le añadimos un timestamp para hacerla única y evitar la caché.
       final uniqueUrl = '$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}';
 
-      // 3. Guardamos la URL única en el perfil del usuario.
       await _supabase.auth.updateUser(
-        UserAttributes(data: {'avatar_url': uniqueUrl, 'full_name': nameController.text}),
+        UserAttributes(data: {'avatar_url': uniqueUrl}),
       );
       
-      // 4. Actualizamos el estado local con la URL única.
       _avatarUrl = uniqueUrl;
+      if(context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto de perfil actualizada.')),
+        );
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Foto de perfil actualizada.')),
-      );
-
-    } on StorageException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al subir la imagen: ${e.message}'), backgroundColor: Colors.red),
-      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ocurrió un error inesperado: $e'), backgroundColor: Colors.red),
-      );
-    }
-    finally{
+        if(context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error al subir la imagen: ${e.toString()}'), backgroundColor: Colors.red),
+            );
+        }
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> guardarCambios(BuildContext context) async {
-     try {
-       await _supabase.auth.updateUser(
-        UserAttributes(data: {'full_name': nameController.text}),
-      );
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nombre actualizado.')),
-      );
-     } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar el nombre: $e'), backgroundColor: Colors.red),
-      );
-     }
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
+  Future<void> logout(BuildContext context) async {
+    await _supabase.auth.signOut();
+    if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (Route<dynamic> route) => false,
+        );
+    }
   }
 }

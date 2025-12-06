@@ -1,4 +1,6 @@
 import 'package:fenix/Back_interfazUsuario.dart';
+import 'package:fenix/Interfaz_InfPersonal.dart';
+import 'package:fenix/Interfaz_Olvidecontrase%C3%B1a.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -9,89 +11,147 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => PerfilUsuarioLogic(),
-      child: Consumer<PerfilUsuarioLogic>( // Consumer para reconstruir la UI con los cambios
+      child: Consumer<PerfilUsuarioLogic>(
         builder: (context, logic, child) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Perfil de Usuario'),
-            ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // 1. Logo de la Escuela
-                  Image.asset(
-                    'assets/images/UAM.png',
-                    height: 150, 
-                  ),
-                  const SizedBox(height: 32),
-
-                  // 2. Foto de Perfil (Ahora conectada a Supabase)
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 80,
-                        backgroundColor: Colors.blueGrey,
-                        // Muestra la imagen de la red si existe, si no, es null
-                        backgroundImage: logic.avatarUrl != null
-                            ? NetworkImage(logic.avatarUrl!)
-                            : null,
-                        // Muestra el icono solo si no hay imagen
-                        child: logic.avatarUrl == null && !logic.isLoading
-                            ? const Icon(Icons.person, size: 100, color: Colors.white)
-                            : null,
-                      ),
-                      // Botón para cambiar la foto
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: IconButton.filled(
-                          icon: const Icon(Icons.camera_alt),
-                          // Llama a la nueva función del backend
-                          onPressed: () => logic.seleccionarYSubirFoto(context),
-                        ),
-                      ),
-                      // Muestra un overlay de carga mientras se sube la imagen
-                      if (logic.isLoading)
-                        const CircleAvatar(
-                          radius: 80,
-                          backgroundColor: Colors.black54,
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 3. Nombre del Usuario
-                  TextFormField(
-                    controller: logic.nameController,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    decoration: const InputDecoration(
-                      labelText: 'Tu Nombre',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // 4. Botón para Guardar Cambios
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('Guardar Cambios'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      textStyle: const TextStyle(fontSize: 18),
-                    ),
-                    onPressed: () => logic.guardarCambios(context),
-                  ),
-                ],
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
               ),
+            ),
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Image.asset('assets/images/UAM.png', height: 45),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 80,
+                              backgroundImage: logic.avatarUrl != null
+                                  ? NetworkImage(logic.avatarUrl!)
+                                  : null,
+                              child: logic.avatarUrl == null && !logic.isLoading
+                                  ? const Icon(Icons.person, size: 100)
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: IconButton.filled(
+                                icon: const Icon(Icons.camera_alt),
+                                onPressed: () => logic.seleccionarYSubirFoto(context),
+                              ),
+                            ),
+                            if (logic.isLoading)
+                              const CircleAvatar(
+                                radius: 80,
+                                backgroundColor: Colors.black54,
+                                child: CircularProgressIndicator(color: Colors.white),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          logic.userName ?? '',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _buildSettingsMenu(context, logic),
+                ),
+              ],
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildSettingsMenu(BuildContext context, PerfilUsuarioLogic logic) {
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        const Text(
+          'Configuración de cuenta',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        _buildMenuOption(
+          context: context,
+          icon: Icons.person_outline,
+          title: 'Información personal',
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InterfazInfPersonal()));
+          },
+        ),
+        _buildMenuOption(
+          context: context,
+          icon: Icons.lock_outline,
+          title: 'Cambiar contraseña',
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InterfazOlvideContrasena()));
+          },
+        ),
+        _buildMenuOption(
+          context: context,
+          icon: Icons.security_outlined,
+          title: 'Privacidad y seguridad',
+          onTap: () {},
+        ),
+        _buildMenuOption(
+          context: context,
+          icon: Icons.info_outline,
+          title: 'Acerca de la app',
+          onTap: () {},
+        ),
+        const Divider(),
+        _buildMenuOption(
+          context: context,
+          icon: Icons.logout,
+          title: 'Cerrar sesión',
+          isDestructive: true,
+          onTap: () => logic.logout(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive ? Colors.red : Colors.black;
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(title, style: TextStyle(color: color)),
+      onTap: onTap,
+      trailing: isDestructive ? null : const Icon(Icons.arrow_forward_ios, size: 16),
     );
   }
 }
