@@ -18,7 +18,7 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.black),
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
@@ -28,7 +28,7 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Align(
                     alignment: Alignment.topLeft,
-                    child: Image.asset('assets/images/UAM.png', height: 45),
+                    child: Image.asset('assets/images/UAM.png', height: 40),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -68,7 +68,7 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          logic.userName ?? '',
+                          logic.username ?? '', // SOLUCIÓN 2: Muestra el username
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -103,9 +103,8 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
           context: context,
           icon: Icons.person_outline,
           title: 'Información personal',
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const InterfazInfPersonal()));
-          },
+          //Llama a la nueva función de navegación
+          onTap: () => logic.navigateToInfPersonal(context),
         ),
         _buildMenuOption(
           context: context,

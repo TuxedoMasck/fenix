@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:fenix/Back_login.dart';
+import 'package:fenix/Interfaz_InfPersonal.dart';
 import 'package:fenix/login.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,29 +8,53 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PerfilUsuarioLogic extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
+  final _authService = AuthService();
 
   String? _avatarUrl;
-  String? _userName;
+  String? _username;
   bool _isLoading = true;
 
   String? get avatarUrl => _avatarUrl;
-  String? get userName => _userName;
+  String? get username => _username;
   bool get isLoading => _isLoading;
 
   PerfilUsuarioLogic() {
-    _loadUserData();
+    loadUserData();
   }
 
-  Future<void> _loadUserData() async {
+  // Ahora es público para poder ser llamado para refrescar los datos.
+  Future<void> loadUserData() async {
     _isLoading = true;
     notifyListeners();
+
     final user = _supabase.auth.currentUser;
-    if (user != null) {
-      _avatarUrl = user.userMetadata?['avatar_url'];
-      _userName = user.userMetadata?['full_name'] ?? 'Sin Nombre';
+    if (user == null) {
+      _isLoading = false;
+      notifyListeners();
+      return;
     }
-    _isLoading = false;
-    notifyListeners();
+
+    try {
+      _avatarUrl = user.userMetadata?['avatar_url'];
+      final data = await _supabase.from('Perfiles').select('username').eq('id', user.id).single();
+      _username = data['username'] ?? 'Sin nombre de usuario';
+
+    } catch (e) {
+      debugPrint("Error cargando datos del perfil: $e");
+      _username = 'Error: ${e.toString()}';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> navigateToInfPersonal(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const InterfazInfPersonal()),
+    );
+    // Refresca los datos al volver de la pantalla de edición.
+    await loadUserData();
   }
 
   Future<void> seleccionarYSubirFoto(BuildContext context) async {
@@ -81,7 +107,7 @@ class PerfilUsuarioLogic extends ChangeNotifier {
   }
 
   Future<void> logout(BuildContext context) async {
-    await _supabase.auth.signOut();
+    await _authService.logout(); 
     if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const LoginPage()),

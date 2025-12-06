@@ -11,21 +11,29 @@ class InterfazInfPersonal extends StatelessWidget {
       create: (_) => InfPersonalLogic(),
       child: Consumer<InfPersonalLogic>(
         builder: (context, logic, child) {
+          if (logic.isLoading) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Información Personal')),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
+
           return Scaffold(
             appBar: AppBar(
               title: const Text('Información Personal'),
             ),
-            body: Padding(
+            body: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
-                    controller: logic.nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre Completo',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                  _buildReadOnlyField('Nombre Completo', logic.fullName),
+                  _buildReadOnlyField('Correo Institucional', logic.email),
+                  _buildReadOnlyField('División', logic.division),
+                  const SizedBox(height: 24),
+                  _buildEditableField('Nombre de Usuario', logic.usernameController),
+                  _buildEditableField('Departamento', logic.departmentController),
+                  _buildEditableField('Licenciatura', logic.degreeController),
                   const SizedBox(height: 32),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -39,7 +47,7 @@ class InterfazInfPersonal extends StatelessWidget {
                               if (error == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Nombre actualizado con éxito.'),
+                                    content: Text('Información actualizada con éxito.'),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -63,6 +71,34 @@ class InterfazInfPersonal extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontSize: 16)),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
       ),
     );
   }
