@@ -20,6 +20,18 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
         .cargarDatosUsuario();
   }
 
+  void _showExpandedImage(BuildContext context, String imageUrl) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.8),
+        pageBuilder: (BuildContext context, _, __) {
+          return _FullScreenImageViewer(imageUrl: imageUrl);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final logic = Provider.of<InterfazPrincipalLogic>(context);
@@ -58,16 +70,26 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             UserAccountsDrawerHeader(
               accountName: Text(usuario.nombre),
               accountEmail: Text(usuario.email),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: usuario.avatarUrl != null
-                    ? NetworkImage(usuario.avatarUrl!)
-                    : null,
-                child: usuario.avatarUrl == null
-                    ? Text(
-                        usuario.inicialAvatar,
-                        style: const TextStyle(fontSize: 40.0),
-                      )
-                    : null,
+              currentAccountPicture: GestureDetector(
+                onTap: () {
+                  if (usuario.avatarUrl != null) {
+                    _showExpandedImage(context, usuario.avatarUrl!);
+                  }
+                },
+                child: Hero(
+                  tag: usuario.avatarUrl ?? 'user-avatar-main',
+                  child: CircleAvatar(
+                    backgroundImage: usuario.avatarUrl != null
+                        ? NetworkImage(usuario.avatarUrl!)
+                        : null,
+                    child: usuario.avatarUrl == null
+                        ? Text(
+                            usuario.inicialAvatar,
+                            style: const TextStyle(fontSize: 40.0),
+                          )
+                        : null,
+                  ),
+                ),
               ),
             ),
             ListTile(
@@ -77,7 +99,7 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Soporte y Ayuda'), // Texto actualizado
+              title: const Text('Soporte y Ayuda'),
               onTap: () => logic.mostrarAyuda(context),
             ),
           ],
@@ -221,6 +243,33 @@ class CursoCard extends StatelessWidget {
               child: const Text('Ir al curso'),
             )
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Widget para la Vista de Imagen a Pantalla Completa (reutilizado) ---
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+
+  const _FullScreenImageViewer({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+        },
+        child: Center(
+          child: Hero(
+            tag: imageUrl, // La etiqueta debe ser única por imagen
+            child: InteractiveViewer(
+              child: Image.network(imageUrl),
+            ),
+          ),
         ),
       ),
     );

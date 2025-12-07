@@ -38,33 +38,44 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircleAvatar(
-                              radius: 80,
-                              backgroundImage: logic.avatarUrl != null
-                                  ? NetworkImage(logic.avatarUrl!)
-                                  : null,
-                              child: logic.avatarUrl == null && !logic.isLoading
-                                  ? const Icon(Icons.person, size: 100)
-                                  : null,
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: IconButton.filled(
-                                icon: const Icon(Icons.camera_alt),
-                                onPressed: () => logic.seleccionarYSubirFoto(context),
+                        GestureDetector(
+                          onTap: () {
+                            if (logic.avatarUrl != null) {
+                              _showExpandedImage(context, logic.avatarUrl!);
+                            }
+                          },
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // El Hero widget es la clave de la animación
+                              Hero(
+                                tag: logic.avatarUrl ?? 'user-avatar',
+                                child: CircleAvatar(
+                                  radius: 80,
+                                  backgroundImage: logic.avatarUrl != null
+                                      ? NetworkImage(logic.avatarUrl!)
+                                      : null,
+                                  child: logic.avatarUrl == null && !logic.isLoading
+                                      ? const Icon(Icons.person, size: 100)
+                                      : null,
+                                ),
                               ),
-                            ),
-                            if (logic.isLoading)
-                              const CircleAvatar(
-                                radius: 80,
-                                backgroundColor: Colors.black54,
-                                child: CircularProgressIndicator(color: Colors.white),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: IconButton.filled(
+                                  icon: const Icon(Icons.camera_alt),
+                                  onPressed: () => logic.seleccionarYSubirFoto(context),
+                                ),
                               ),
-                          ],
+                              if (logic.isLoading)
+                                const CircleAvatar(
+                                  radius: 80,
+                                  backgroundColor: Colors.black54,
+                                  child: CircularProgressIndicator(color: Colors.white),
+                                ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -85,6 +96,18 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
               ],
             ),
           );
+        },
+      ),
+    );
+  }
+
+  void _showExpandedImage(BuildContext context, String imageUrl) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.8),
+        pageBuilder: (BuildContext context, _, __) {
+          return _FullScreenImageViewer(imageUrl: imageUrl);
         },
       ),
     );
@@ -115,12 +138,14 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
   }
 
   void _showAboutDialog(BuildContext context) {
-    showDialog(context: context, builder:(BuildContext context) {
-      return AlertDialog(
-        title: const Text('Acerca de la App'),
-        content: const SingleChildScrollView(
-          child: Text('Esta app busca centralizar todo tipo de informacion dispersa de la Universidad Autonoma Metropolitana, con el fin de facilitar las notificaciones a los alumnos, profesores e incluso al personal administrativo, para evitar perdidas de informacion.'
-            ),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Acerca de la App'),
+          content: const SingleChildScrollView(
+            child: Text(
+                'Esta app busca centralizar todo tipo de informacion dispersa de la Universidad Autonoma Metropolitana, con el fin de facilitar las notificaciones a los alumnos, profesores e incluso al personal administrativo, para evitar perdidas de informacion.'),
           ),
           actions: [
             TextButton(
@@ -162,13 +187,13 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
           context: context,
           icon: Icons.privacy_tip_outlined,
           title: 'Privacidad',
-          onTap: () => _showPrivacyDialog(context), // Muestra la ventana emergente
+          onTap: () => _showPrivacyDialog(context),
         ),
         _buildMenuOption(
           context: context,
           icon: Icons.info_outline,
           title: 'Acerca de la app',
-          onTap: () => _showAboutDialog(context), // Muestra la ventana emergente
+          onTap: () => _showAboutDialog(context),
         ),
         const Divider(),
         _buildMenuOption(
@@ -195,6 +220,33 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
       title: Text(title, style: TextStyle(color: color)),
       onTap: onTap,
       trailing: isDestructive ? null : const Icon(Icons.arrow_forward_ios, size: 16),
+    );
+  }
+}
+
+//Widget para la Vista de Imagen a Pantalla Completa
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+
+  const _FullScreenImageViewer({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+        },
+        child: Center(
+          child: Hero(
+            tag: imageUrl,
+            child: InteractiveViewer(
+              child: Image.network(imageUrl),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
