@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 
-// --- Modelo de Datos ---
+// datos
 class SupportTicket {
   final String email;
   final String description;
 
   SupportTicket({required this.email, required this.description});
-
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'description': description,
-      };
 }
 
-// --- Servicio de Backend ---
-class SupportService {
-  Future<bool> sendTicket(SupportTicket ticket) async {
-    // Simula el envío a un backend. Retorna éxito después de 1s.
-    debugPrint('Enviando ticket: ${ticket.toJson()}');
-    await Future.delayed(const Duration(seconds: 1));
+//backend
+class AyudaLogic extends ChangeNotifier {
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  Future<bool> sendSupportTicket(SupportTicket ticket) async {
+    _isLoading = true;
+    notifyListeners();
+
+    debugPrint('Enviando ticket para: ${ticket.email}');
+    // Simula el envío a un backend real
+    await Future.delayed(const Duration(seconds: 2));
+
+    _isLoading = false;
+    notifyListeners();
+
+    // Simula una respuesta exitosa
     return true;
   }
 }

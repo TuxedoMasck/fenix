@@ -59,11 +59,9 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               accountName: Text(usuario.nombre),
               accountEmail: Text(usuario.email),
               currentAccountPicture: CircleAvatar(
-                // Si la URL del avatar no es nula, usa la imagen de la red.
                 backgroundImage: usuario.avatarUrl != null
                     ? NetworkImage(usuario.avatarUrl!)
                     : null,
-                // Si no hay imagen, muestra la inicial.
                 child: usuario.avatarUrl == null
                     ? Text(
                         usuario.inicialAvatar,
@@ -78,8 +76,8 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
               onTap: () => logic.navegarAPerfil(context),
             ),
             ListTile(
-              leading: const Icon(Icons.help),
-              title: const Text('Ayuda'),
+              leading: const Icon(Icons.help_outline),
+              title: const Text('Soporte y Ayuda'), // Texto actualizado
               onTap: () => logic.mostrarAyuda(context),
             ),
           ],
