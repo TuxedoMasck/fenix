@@ -68,7 +68,7 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          logic.username ?? '', // SOLUCIÓN 2: Muestra el username
+                          logic.username ?? '',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -90,6 +90,51 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
     );
   }
 
+  void _showPrivacyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Política de Privacidad y Datos'),
+          content: const SingleChildScrollView(
+            child: Text(
+              'En cumplimiento con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), Fenix App informa que los datos personales que usted proporciona (nombre, correo, identificadores, etc.) son utilizados exclusivamente para el funcionamiento de la aplicación, incluyendo la autenticación, personalización del perfil y comunicación interna. Sus datos no serán transferidos a terceros sin su consentimiento, salvo las excepciones previstas por la ley. Al usar esta aplicación, usted consiente el tratamiento de sus datos personales para los fines descritos. El responsable de los datos es la administración de Fenix App. Para ejercer sus derechos ARCO (Acceso, Rectificación, Cancelación y Oposición), por favor, contáctenos a través de la sección de soporte.'
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Aceptar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(context: context, builder:(BuildContext context) {
+      return AlertDialog(
+        title: const Text('Acerca de la App'),
+        content: const SingleChildScrollView(
+          child: Text('Esta app busca centralizar todo tipo de informacion dispersa de la Universidad Autonoma Metropolitana, con el fin de facilitar las notificaciones a los alumnos, profesores e incluso al personal administrativo, para evitar perdidas de informacion.'
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Aceptar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildSettingsMenu(BuildContext context, PerfilUsuarioLogic logic) {
     return ListView(
       padding: const EdgeInsets.all(16.0),
@@ -103,7 +148,6 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
           context: context,
           icon: Icons.person_outline,
           title: 'Información personal',
-          //Llama a la nueva función de navegación
           onTap: () => logic.navigateToInfPersonal(context),
         ),
         _buildMenuOption(
@@ -116,15 +160,15 @@ class InterfazPerfilDeUsuario extends StatelessWidget {
         ),
         _buildMenuOption(
           context: context,
-          icon: Icons.security_outlined,
-          title: 'Privacidad y seguridad',
-          onTap: () {},
+          icon: Icons.privacy_tip_outlined,
+          title: 'Privacidad',
+          onTap: () => _showPrivacyDialog(context), // Muestra la ventana emergente
         ),
         _buildMenuOption(
           context: context,
           icon: Icons.info_outline,
           title: 'Acerca de la app',
-          onTap: () {},
+          onTap: () => _showAboutDialog(context), // Muestra la ventana emergente
         ),
         const Divider(),
         _buildMenuOption(
