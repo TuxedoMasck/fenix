@@ -33,7 +33,7 @@ class InterfazInfPersonal extends StatelessWidget {
                   const SizedBox(height: 24),
                   _buildEditableField('Nombre de Usuario', logic.usernameController),
                   _buildEditableField('Departamento', logic.departmentController),
-                  _buildEditableField('Licenciatura', logic.degreeController),
+                  _buildEditableField('Licenciatura', logic.licenciaturaController),
                   const SizedBox(height: 32),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(

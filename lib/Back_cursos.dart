@@ -1,86 +1,131 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// Define si el usuario es administrador o miembro del curso.
-enum UserRole { administrador, miembro }
-
-// Representa un curso con su nombre, descripción y el rol del usuario.
 class Curso {
-  final String id;
-  final String nombre;
-  final String descripcion;
-  final String codigo;
-  final UserRole rol;
+  final int id;
+  final String name;
 
-  Curso({
-    required this.id,
-    required this.nombre,
-    required this.descripcion,
-    required this.codigo,
-    required this.rol,
-  });
+  Curso({required this.id, required this.name});
+
+  factory Curso.fromJson(Map<String, dynamic> json) {
+    return Curso(
+      id: json['id'] as int,
+      name: json['name'] as String,
+    );
+  }
 }
 
 class CursosLogic extends ChangeNotifier {
-  // Lista de cursos (simula una base de datos).
-  final List<Curso> _cursos = [
-    Curso(
-      id: '1',
-      nombre: 'Cálculo Avanzado',
-      descripcion: 'Curso de matemáticas para ingeniería.',
-      codigo: 'A4X-12B',
-      rol: UserRole.administrador,
-    ),
-    Curso(
-      id: '2',
-      nombre: 'Historia del Arte Moderno',
-      descripcion: 'Un recorrido por las vanguardias del siglo XX.',
-      codigo: 'C9Z-88V',
-      rol: UserRole.miembro,
-    ),
-  ];
+  final _supabase = Supabase.instance.client;
+  
+  List<Curso> _cursos = [];
+  String? _userRole;
+  bool _isLoading = true;
+  String? _error;
 
-  // Getter para que la UI acceda a los cursos.
   List<Curso> get cursos => _cursos;
+  String? get userRole => _userRole;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  // Genera un código aleatorio para un nuevo curso.
-  String _generarCodigo() {
+  CursosLogic() {
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _fetchUserRole();
+    await fetchUserCourses();
+  }
+
+  Future<void> _fetchUserRole() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final data = await _supabase.from('Perfiles').select('role').eq('id', user.id).single();
+      _userRole = data['role'] as String?;
+    } catch (e) {
+      debugPrint('Error fetching user role: $e');
+      _userRole = 'student';
+    }
+  }
+
+  Future<void> fetchUserCourses() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw 'Usuario no autenticado.';
+
+      if (_userRole == 'professor') {
+        final data = await _supabase.from('courses').select().eq('professor_id', user.id);
+        _cursos = (data as List).map((json) => Curso.fromJson(json)).toList();
+      } else {
+        final enrollmentData = await _supabase.from('enrollments').select('course_id').eq('student_id', user.id);
+        if (enrollmentData.isNotEmpty) {
+          final courseIds = (enrollmentData as List).map((row) => row['course_id'] as int).toList();
+          // SOLUCIÓN DEFINITIVA: Usar el método .filter()
+          final data = await _supabase.from('courses').select().filter('id', 'in', courseIds);
+          _cursos = (data as List).map((json) => Curso.fromJson(json)).toList();
+        } else {
+          _cursos = [];
+        }
+      }
+    } catch (e) {
+      debugPrint("Error al cargar cursos: $e");
+      _error = "No se pudieron cargar los cursos.";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  String _generateRandomCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
-    final code = String.fromCharCodes(Iterable.generate(
-      6, (_) => chars.codeUnitAt(random.nextInt(chars.length)),
-    ));
-    return '${code.substring(0, 3)}-${code.substring(3, 6)}';
+    return String.fromCharCodes(Iterable.generate(6, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
   }
 
-  // Lógica para crear un nuevo curso.
-  void crearCurso(String nombre, String descripcion) {
-    final nuevoCurso = Curso(
-      id: DateTime.now().toString(), // ID único simple.
-      nombre: nombre,
-      descripcion: descripcion,
-      codigo: _generarCodigo(),
-      rol: UserRole.administrador, // Quien crea el curso es admin.
-    );
-    _cursos.add(nuevoCurso);
-    notifyListeners(); // Notifica a la UI para que se actualice.
+  Future<String?> createCourse(String name) async {
+    if (name.isEmpty) return 'El nombre del curso no puede estar vacío.';
+    if (_userRole != 'professor') return 'Acción no permitida. Solo los profesores pueden crear cursos.';
+
+    try {
+      final user = _supabase.auth.currentUser!;
+      final code = _generateRandomCode();
+      
+      await _supabase.from('courses').insert({
+        'name': name,
+        'professor_id': user.id,
+        'code': code,
+      });
+      await fetchUserCourses();
+      return null;
+    } catch (e) {
+      return 'Error al crear el curso: ${e.toString()}';
+    }
   }
 
-  // Lógica para unirse a un curso.
-  void unirseACurso(String codigo) {
-    // Aquí iría la lógica para validar el código con un backend real.
-    // Por ahora, es solo una simulación.
-    print('Intentando unirse al curso con el código: $codigo');
-    // Si el código es válido, se añadiría el curso a la lista del usuario.
-    notifyListeners();
-  }
+  Future<String?> joinCourse(String code) async {
+    if (code.isEmpty) return 'El código no puede estar vacío.';
 
-  // Lógica para compartir el código.
-  void compartirCodigo(BuildContext context, String codigo) {
-    // En una app real, podrías usar el paquete `share_plus`.
-    // Por ahora, solo lo mostramos en un SnackBar.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Código del curso copiado: $codigo')),
-    );
+    try {
+      final user = _supabase.auth.currentUser!;
+      
+      final courseData = await _supabase.from('courses').select('id').eq('code', code).single();
+      final courseId = courseData['id'] as int;
+
+      await _supabase.from('enrollments').insert({
+        'student_id': user.id,
+        'course_id': courseId,
+      });
+      await fetchUserCourses();
+      return null;
+    } catch (e) {
+      return 'Error al unirse al curso. Verifica el código e inténtalo de nuevo.';
+    }
   }
 }

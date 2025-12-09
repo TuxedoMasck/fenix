@@ -10,7 +10,7 @@ class InfPersonalLogic extends ChangeNotifier {
   // Controladores para los campos editables
   late TextEditingController usernameController;
   late TextEditingController departmentController;
-  late TextEditingController degreeController;
+  late TextEditingController licenciaturaController;
 
   // Variables para los campos no editables
   String fullName = '';
@@ -20,7 +20,7 @@ class InfPersonalLogic extends ChangeNotifier {
   InfPersonalLogic() {
     usernameController = TextEditingController();
     departmentController = TextEditingController();
-    degreeController = TextEditingController();
+    licenciaturaController = TextEditingController();
     _loadProfileData();
   }
 
@@ -37,7 +37,7 @@ class InfPersonalLogic extends ChangeNotifier {
       // Asigna los valores a los controladores y variables
       usernameController.text = data['username'] ?? '';
       departmentController.text = data['department'] ?? '';
-      degreeController.text = data['degree'] ?? '';
+      licenciaturaController.text = data['licenciatura'] ?? '';
       fullName = data['full_name'] ?? 'Sin nombre completo';
       division = data['division'] ?? 'Sin división';
       email = userEmail;
@@ -59,7 +59,7 @@ class InfPersonalLogic extends ChangeNotifier {
       await _supabase.from('Perfiles').update({
         'username': usernameController.text,
         'department': departmentController.text,
-        'degree': degreeController.text,
+        'licenciatura': licenciaturaController.text,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', userId);
       
@@ -76,7 +76,7 @@ class InfPersonalLogic extends ChangeNotifier {
   void dispose() {
     usernameController.dispose();
     departmentController.dispose();
-    degreeController.dispose();
+    licenciaturaController.dispose();
     super.dispose();
   }
 }

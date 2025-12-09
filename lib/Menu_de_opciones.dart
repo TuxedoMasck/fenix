@@ -1,77 +1,95 @@
+import 'package:fenix/Back_interfas_Principal.dart';
+import 'package:fenix/Interfaz_Notificaciones.dart';
+import 'package:fenix/Interfaz_Cursos.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// 1. Pantalla de marcador de posición para las opciones sin interfaz creada
+class PlaceholderScreen extends StatelessWidget {
+  final String title;
+  const PlaceholderScreen({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text('Pantalla para \'$title\' en construcción.')),
+    );
+  }
+}
 
 class MenuOpciones extends StatelessWidget {
   const MenuOpciones({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final mainLogic = Provider.of<InterfazPrincipalLogic>(context, listen: false);
+
+    // 2. Función de ayuda para registrar y navegar, evitando la repetición de código
+    void handleTap(String title, IconData icon, Widget screen) {
+      final item = QuickAccessItem(icon: icon, title: title, screen: screen);
+      mainLogic.registerRecentAction(item);
+      Navigator.pop(context); // Cierra el drawer
+      Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    }
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
           const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue, // Puedes cambiar este color
-            ),
-            child: Text(
-              'Menú',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-              ),
-            ),
+            decoration: BoxDecoration(color: Colors.blue),
+            child: Text('Menú', style: TextStyle(color: Colors.white, fontSize: 24)),
           ),
+          // 3. Todos los botones ahora usan la nueva arquitectura
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Notificaciones'),
-            onTap: () {
-              // TODO: Navegar a la pantalla de notificaciones
-              Navigator.pop(context);
-            },
+            onTap: () => handleTap('Notificaciones', Icons.notifications_outlined, const InterfazNotificaciones()),
           ),
           ListTile(
             leading: const Icon(Icons.assignment_outlined),
             title: const Text('Solicitudes'),
-            onTap: () {
-              // TODO: Navegar a la pantalla de solicitudes
-              Navigator.pop(context);
-            },
+            onTap: () => handleTap('Solicitudes', Icons.assignment_outlined, const PlaceholderScreen(title: 'Solicitudes')),
           ),
           const Divider(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'Mi universidad',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
+            child: Text('Mi universidad', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
           ),
-          _buildUniversityOption(icon: Icons.schedule, title: 'Horario', onTap: () => Navigator.pop(context)),
-          _buildUniversityOption(icon: Icons.grade_outlined, title: 'Calificaciones', onTap: () => Navigator.pop(context)),
-          _buildUniversityOption(icon: Icons.school_outlined, title: 'Inscripción de cursos', onTap: () => Navigator.pop(context)),
-          _buildUniversityOption(icon: Icons.delete_outline, title: 'Baja UEAS', onTap: () => Navigator.pop(context)),
-          _buildUniversityOption(icon: Icons.auto_stories_outlined, title: 'Recuperación/Extraordinarios', onTap: () => Navigator.pop(context)),
+          ListTile(
+            leading: const Icon(Icons.schedule),
+            title: const Text('Horario'),
+            onTap: () => handleTap('Horario', Icons.schedule, const PlaceholderScreen(title: 'Horario')),
+          ),
+          ListTile(
+            leading: const Icon(Icons.grade_outlined),
+            title: const Text('Calificaciones'),
+            onTap: () => handleTap('Calificaciones', Icons.grade_outlined, const PlaceholderScreen(title: 'Calificaciones')),
+          ),
+          ListTile(
+            leading: const Icon(Icons.school_outlined),
+            title: const Text('Inscripción de cursos'),
+            onTap: () => handleTap('Inscripción de cursos', Icons.school_outlined, const InterfazCursos()),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline),
+            title: const Text('Baja UEAS'),
+            onTap: () => handleTap('Baja UEAS', Icons.delete_outline, const PlaceholderScreen(title: 'Baja UEAS')),
+          ),
+          ListTile(
+            leading: const Icon(Icons.auto_stories_outlined),
+            title: const Text('Recuperación/Extraordinarios'),
+            onTap: () => handleTap('Recuperación/Extraordinarios', Icons.auto_stories_outlined, const PlaceholderScreen(title: 'Recuperación/Extraordinarios')),
+          ),
           const Divider(),
-           ListTile(
+          ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Configuración'),
-            onTap: () {
-              // TODO: Navegar a la pantalla de configuración
-              Navigator.pop(context);
-            },
+            onTap: () => handleTap('Configuración', Icons.settings_outlined, const PlaceholderScreen(title: 'Configuración')),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildUniversityOption({required IconData icon, required String title, required VoidCallback onTap}){
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
     );
   }
 }

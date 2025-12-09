@@ -1,35 +1,37 @@
+import 'package:fenix/Back_cursos.dart';
 import 'package:fenix/Interfaz_Ayuda.dart';
 import 'package:fenix/Interfaz_PerfildeUsuario.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Usuario {
-  final String nombre;
+  final String nombre; // Esta propiedad ahora contendrá el username
   final String email;
-  final String? avatarUrl; // La URL de la foto puede ser nula
+  final String? avatarUrl;
 
   Usuario({required this.nombre, required this.email, this.avatarUrl});
 
-  // Obtiene la inicial del nombre para mostrarla si no hay foto.
   String get inicialAvatar {
     if (nombre.isEmpty) return '?';
     return nombre[0].toUpperCase();
   }
 }
 
-class Notificacion {
-  final String titulo;
-  final String subtitulo;
-  final IconData icono;
+// Modelo para los items de Acceso Rápido
+class QuickAccessItem {
+  final IconData icon;
+  final String title;
+  final Widget screen;
 
-  Notificacion({required this.titulo, required this.subtitulo, required this.icono});
-}
+  QuickAccessItem({required this.icon, required this.title, required this.screen});
 
-class Curso {
-  final String nombre;
-  final String descripcion;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuickAccessItem && runtimeType == other.runtimeType && title == other.title;
 
-  Curso({required this.nombre, required this.descripcion});
+  @override
+  int get hashCode => title.hashCode;
 }
 
 //Lógica de la Interfaz Principal
@@ -43,48 +45,82 @@ class InterfazPrincipalLogic extends ChangeNotifier {
   Usuario? _usuario;
   Usuario? get usuario => _usuario;
 
-  // La data de notificaciones y cursos sigue siendo de ejemplo por ahora.
-  final List<Notificacion> _notificaciones = [
-    Notificacion(titulo: 'Notificación 1', subtitulo: 'Descripción de la notificación...', icono: Icons.warning),
-    Notificacion(titulo: 'Notificación 2', subtitulo: 'Otra descripción...', icono: Icons.info),
-  ];
-  List<Notificacion> get notificaciones => _notificaciones;
-
-  final List<Curso> _cursos = [
-    Curso(nombre: 'Curso 1', descripcion: 'Descripción breve del curso...'),
-    Curso(nombre: 'Curso 2', descripcion: 'Descripción breve del curso...'),
-  ];
+  List<Curso> _cursos = [];
   List<Curso> get cursos => _cursos;
 
-  // Carga los datos del usuario actual desde Supabase.
-  Future<void> cargarDatosUsuario() async {
-    _isLoading = true;
-    notifyListeners();
+  List<QuickAccessItem> _recentActions = [];
+  List<QuickAccessItem> get recentActions => _recentActions;
 
-    final user = _supabase.auth.currentUser;
-    if (user != null) {
-      final nombre = user.userMetadata?['full_name'] ?? 'Sin Nombre';
-      final email = user.email ?? 'sin.email@example.com';
-      final avatarUrl = user.userMetadata?['avatar_url'];
-
-      _usuario = Usuario(nombre: nombre, email: email, avatarUrl: avatarUrl);
-    } else {
-      // Fallback por si no hay usuario
-      _usuario = Usuario(nombre: 'Invitado', email: '');
-    }
-
+  Future<void> initialize() async {
+    await _cargarDatosUsuario();
+    await _fetchUserCourses();
     _isLoading = false;
     notifyListeners();
   }
 
-  // Navega al perfil y, al regresar, recarga los datos para reflejar cambios.
+  void registerRecentAction(QuickAccessItem item) {
+    _recentActions.removeWhere((action) => action.title == item.title);
+    _recentActions.insert(0, item);
+    if (_recentActions.length > 3) {
+      _recentActions = _recentActions.sublist(0, 3);
+    }
+    notifyListeners();
+  }
+
+  // SOLUCIÓN: El método ahora carga el 'username' desde la tabla 'Perfiles'
+  Future<void> _cargarDatosUsuario() async {
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      try {
+        final profileData = await _supabase.from('Perfiles').select('username').eq('id', user.id).single();
+        final nombre = profileData['username'] ?? 'Sin nombre de usuario';
+        final email = user.email ?? 'sin.email@example.com';
+        final avatarUrl = user.userMetadata?['avatar_url'];
+        _usuario = Usuario(nombre: nombre, email: email, avatarUrl: avatarUrl);
+      } catch (e) {
+        debugPrint("Error cargando nombre de usuario para el drawer: $e");
+        final email = user.email ?? 'sin.email@example.com';
+        final avatarUrl = user.userMetadata?['avatar_url'];
+        _usuario = Usuario(nombre: 'Error al cargar', email: email, avatarUrl: avatarUrl);
+      }
+    } else {
+      _usuario = Usuario(nombre: 'Invitado', email: '');
+    }
+  }
+
+
+  Future<void> _fetchUserCourses() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final profileData = await _supabase.from('Perfiles').select('role').eq('id', user.id).single();
+      final userRole = profileData['role'] as String?;
+
+      if (userRole == 'professor') {
+        final data = await _supabase.from('courses').select().eq('professor_id', user.id);
+        _cursos = (data as List).map((json) => Curso.fromJson(json)).toList();
+      } else {
+        final enrollmentData = await _supabase.from('enrollments').select('course_id').eq('student_id', user.id);
+        if (enrollmentData.isNotEmpty) {
+          final courseIds = (enrollmentData as List).map((row) => row['course_id'] as int).toList();
+          final data = await _supabase.from('courses').select().filter('id', 'in', courseIds);
+          _cursos = (data as List).map((json) => Curso.fromJson(json)).toList();
+        } else {
+          _cursos = [];
+        }
+      }
+    } catch (e) {
+      debugPrint("Error al cargar cursos en la pantalla principal: $e");
+    }
+  }
+
   Future<void> navegarAPerfil(BuildContext context) async {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const InterfazPerfilDeUsuario()),
     );
-    // Importante Recarga los datos al volver.
-    await cargarDatosUsuario();
+    await initialize();
   }
 
   void mostrarAyuda(BuildContext context) {
@@ -92,10 +128,5 @@ class InterfazPrincipalLogic extends ChangeNotifier {
       context,
       MaterialPageRoute(builder: (context) => const InterfazAyuda()),
     );
-  }
-
-  void abrirOpciones(BuildContext context) {
-    // Aquí podrías navegar a una pantalla de opciones completa
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo menú de opciones')));
   }
 }
