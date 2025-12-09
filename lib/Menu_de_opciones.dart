@@ -1,10 +1,11 @@
 import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:fenix/Interfaz_Notificaciones.dart';
 import 'package:fenix/Interfaz_Cursos.dart';
+import 'package:fenix/Interfaz_Configuracion.dart'; // 1. Importar la nueva pantalla
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// 1. Pantalla de marcador de posición para las opciones sin interfaz creada
+// Pantalla de marcador de posición
 class PlaceholderScreen extends StatelessWidget {
   final String title;
   const PlaceholderScreen({super.key, required this.title});
@@ -25,11 +26,10 @@ class MenuOpciones extends StatelessWidget {
   Widget build(BuildContext context) {
     final mainLogic = Provider.of<InterfazPrincipalLogic>(context, listen: false);
 
-    // 2. Función de ayuda para registrar y navegar, evitando la repetición de código
     void handleTap(String title, IconData icon, Widget screen) {
       final item = QuickAccessItem(icon: icon, title: title, screen: screen);
       mainLogic.registerRecentAction(item);
-      Navigator.pop(context); // Cierra el drawer
+      Navigator.pop(context);
       Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
     }
 
@@ -41,7 +41,6 @@ class MenuOpciones extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.blue),
             child: Text('Menú', style: TextStyle(color: Colors.white, fontSize: 24)),
           ),
-          // 3. Todos los botones ahora usan la nueva arquitectura
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Notificaciones'),
@@ -86,7 +85,8 @@ class MenuOpciones extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Configuración'),
-            onTap: () => handleTap('Configuración', Icons.settings_outlined, const PlaceholderScreen(title: 'Configuración')),
+            // 2. Conectar el botón a la nueva pantalla de configuración
+            onTap: () => handleTap('Configuración', Icons.settings_outlined, const InterfazConfiguracion()),
           ),
         ],
       ),
