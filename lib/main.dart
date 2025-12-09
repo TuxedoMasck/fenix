@@ -1,5 +1,4 @@
 import 'package:fenix/Back_interfas_Principal.dart';
-import 'package:fenix/Back_menu_opciones.dart';
 import 'package:fenix/Back_interfazRegistro.dart';
 import 'package:fenix/login.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => InterfazPrincipalLogic()),
-        ChangeNotifierProvider(create: (_) => MenuOpcionesLogic()),
         ChangeNotifierProvider(create: (_) => RegistroLogic()),
       ],
       child: MaterialApp(
