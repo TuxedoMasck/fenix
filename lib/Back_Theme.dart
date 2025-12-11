@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeLogic extends ChangeNotifier {
-  static const _themePrefKey = 'theme_mode';
-  ThemeMode _themeMode = ThemeMode.light;
+  static const _isDarkKey = 'is_dark'; // Usaremos una clave booleana, más simple
+  ThemeMode _themeMode = ThemeMode.light; // El valor por defecto siempre será claro
 
   ThemeMode get themeMode => _themeMode;
 
@@ -13,9 +13,9 @@ class ThemeLogic extends ChangeNotifier {
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    // 0 = light, 1 = dark. Default to light.
-    final themeIndex = prefs.getInt(_themePrefKey) ?? 0;
-    _themeMode = themeIndex == 1 ? ThemeMode.dark : ThemeMode.light;
+    // Si no encuentra nada, el valor por defecto es 'false' (modo claro)
+    final isDark = prefs.getBool(_isDarkKey) ?? false;
+    _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
@@ -24,6 +24,7 @@ class ThemeLogic extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_themePrefKey, _themeMode.index);
+    // Guardamos el valor booleano directamente
+    await prefs.setBool(_isDarkKey, isDark);
   }
 }

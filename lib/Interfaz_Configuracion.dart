@@ -8,12 +8,8 @@ class InterfazConfiguracion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Ya estamos proveyendo ThemeLogic en main.dart, así que aquí solo lo consumimos.
-        // Este provider es para la lógica específica de esta pantalla.
-        ChangeNotifierProvider(create: (_) => ConfiguracionLogic()),
-      ],
+    return ChangeNotifierProvider(
+      create: (_) => ConfiguracionLogic(),
       child: const _InterfazConfiguracionView(),
     );
   }
@@ -24,6 +20,7 @@ class _InterfazConfiguracionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Usamos 'watch' para que la UI se reconstruya con los cambios
     final themeLogic = context.watch<ThemeLogic>();
     final configLogic = context.watch<ConfiguracionLogic>();
 

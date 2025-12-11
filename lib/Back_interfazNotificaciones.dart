@@ -50,31 +50,29 @@ class NotificacionesLogic extends ChangeNotifier {
       final user = _supabase.auth.currentUser;
       if (user == null) throw 'Usuario no autenticado.';
 
-      final enrollmentData = await _supabase
-          .from('enrollments')
-          .select('course_id')
-          .eq('student_id', user.id);
+      final profileData = await _supabase.from('Perfiles').select('role').eq('id', user.id).single();
+      final userRole = profileData['role'] as String?;
 
-      if (enrollmentData.isEmpty) {
-        _notificaciones = [];
-        _isLoading = false;
-        notifyListeners();
-        return;
+      List<int> userCourseIds = [];
+      if (userRole == 'professor') {
+        final coursesData = await _supabase.from('courses').select('id').eq('professor_id', user.id);
+        userCourseIds = (coursesData as List).map((row) => row['id'] as int).toList();
+      } else {
+        final enrollmentData = await _supabase.from('enrollments').select('course_id').eq('student_id', user.id);
+        userCourseIds = (enrollmentData as List).map((row) => row['course_id'] as int).toList();
       }
 
-      final courseIds = (enrollmentData as List)
-          .map((row) => row['course_id'] as int)
-          .toList();
+      final query = _supabase.from('notifications').select();
+      
+      if (userCourseIds.isNotEmpty) {
+        query.or('target_course_id.in.(${userCourseIds.join(',')}),target_course_id.is.null');
+      } else {
+        query.filter('target_course_id', 'is', null);
+      }
 
-      final notificationsData = await _supabase
-          .from('notifications')
-          .select()
-          .filter('target_course_id', 'in', courseIds)
-          .order('created_at', ascending: false);
+      final notificationsData = await query.order('created_at', ascending: false);
 
-      _notificaciones = (notificationsData as List)
-          .map((json) => Notificacion.fromJson(json))
-          .toList();
+      _notificaciones = (notificationsData as List).map((json) => Notificacion.fromJson(json)).toList();
 
     } catch (e) {
       debugPrint("Error al cargar notificaciones: $e");

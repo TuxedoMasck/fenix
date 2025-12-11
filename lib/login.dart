@@ -163,6 +163,8 @@ class _LoginPageState extends State<LoginPage> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple.shade50,
+                  foregroundColor: Colors.deepPurple,
                   minimumSize: const Size(double.infinity, 50),
                   textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -175,9 +177,12 @@ class _LoginPageState extends State<LoginPage> {
                     MaterialPageRoute(builder: (context) => const InterfazOlvideContrasena()),
                   );
                 },
-                child: const Text(
+                child: Text(
                   '¿Olvidaste tu contraseña?',
-                  style: TextStyle(decoration: TextDecoration.underline),
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: Colors.deepPurple.shade300,
+                  ),
                 ),
               ),
               Row(
@@ -196,6 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         decoration: TextDecoration.underline,
+                        color: Colors.deepPurple,
                       ),
                     ),
                   ),
@@ -209,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey.shade200,
                   foregroundColor: Colors.red,
-                ),
+                ), 
                 child: const Text('Redes Sociales'),
               ),
               const Spacer(flex: 1),

@@ -1,7 +1,8 @@
 import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:fenix/Interfaz_Notificaciones.dart';
 import 'package:fenix/Interfaz_Cursos.dart';
-import 'package:fenix/Interfaz_Configuracion.dart'; // 1. Importar la nueva pantalla
+import 'package:fenix/Interfaz_Configuracion.dart';
+import 'package:fenix/Interfaz_Solicitudes.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,7 +50,8 @@ class MenuOpciones extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.assignment_outlined),
             title: const Text('Solicitudes'),
-            onTap: () => handleTap('Solicitudes', Icons.assignment_outlined, const PlaceholderScreen(title: 'Solicitudes')),
+            // Conectar el botón a la nueva pantalla de solicitudes
+            onTap: () => handleTap('Solicitudes', Icons.assignment_outlined, const InterfazSolicitudes()),
           ),
           const Divider(),
           const Padding(
@@ -85,7 +87,6 @@ class MenuOpciones extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.settings_outlined),
             title: const Text('Configuración'),
-            // 2. Conectar el botón a la nueva pantalla de configuración
             onTap: () => handleTap('Configuración', Icons.settings_outlined, const InterfazConfiguracion()),
           ),
         ],

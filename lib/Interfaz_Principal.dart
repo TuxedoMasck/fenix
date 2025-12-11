@@ -2,7 +2,7 @@ import 'package:fenix/Back_interfas_Principal.dart';
 import 'package:fenix/Back_cursos.dart';
 import 'package:fenix/Interfaz_Credencial.dart';
 import 'package:fenix/Interfaz_Cursos.dart';
-import 'package:fenix/Interfaz_DetalleCurso.dart'; // 1. Importar la nueva pantalla
+import 'package:fenix/Interfaz_DetalleCurso.dart';
 import 'package:fenix/Menu_de_opciones.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +21,19 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
     Provider.of<InterfazPrincipalLogic>(context, listen: false).initialize();
   }
 
+  // 1. Función para mostrar la imagen expandida (Restaurada)
+  void _showExpandedImage(BuildContext context, String imageUrl, String heroTag) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.8),
+        pageBuilder: (BuildContext context, _, __) {
+          return _FullScreenImageViewer(imageUrl: imageUrl, heroTag: heroTag);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final logic = context.watch<InterfazPrincipalLogic>();
@@ -30,6 +43,7 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
     }
 
     final usuario = logic.usuario!;
+    final avatarHeroTag = usuario.avatarUrl ?? 'user-avatar-main';
 
     return Scaffold(
       appBar: AppBar(
@@ -52,9 +66,20 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
             UserAccountsDrawerHeader(
               accountName: Text(usuario.nombre),
               accountEmail: Text(usuario.email),
-              currentAccountPicture: CircleAvatar(
-                backgroundImage: usuario.avatarUrl != null ? NetworkImage(usuario.avatarUrl!) : null,
-                child: usuario.avatarUrl == null ? Text(usuario.inicialAvatar, style: const TextStyle(fontSize: 40.0)) : null,
+              // 2. Foto de perfil envuelta en GestureDetector y Hero (Restaurado)
+              currentAccountPicture: GestureDetector(
+                onTap: () {
+                  if (usuario.avatarUrl != null) {
+                    _showExpandedImage(context, usuario.avatarUrl!, avatarHeroTag);
+                  }
+                },
+                child: Hero(
+                  tag: avatarHeroTag,
+                  child: CircleAvatar(
+                    backgroundImage: usuario.avatarUrl != null ? NetworkImage(usuario.avatarUrl!) : null,
+                    child: usuario.avatarUrl == null ? Text(usuario.inicialAvatar, style: const TextStyle(fontSize: 40.0)) : null,
+                  ),
+                ),
               ),
             ),
             ListTile(leading: const Icon(Icons.person), title: const Text('Perfil del usuario'), onTap: () => logic.navegarAPerfil(context)),
@@ -86,7 +111,6 @@ class _InterfazPrincipalState extends State<InterfazPrincipal> {
                             final curso = logic.cursos[index];
                             return CursoCard(
                               curso: curso,
-                              // 2. Navegar a la pantalla de detalle al tocar
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -166,7 +190,7 @@ class CursoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 200,
-      child: GestureDetector( // 3. Hacer la tarjeta entera presionable
+      child: GestureDetector(
         onTap: onPressed,
         child: Card(
           margin: const EdgeInsets.only(right: 16),
@@ -176,6 +200,32 @@ class CursoCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [Text(curso.name, style: const TextStyle(fontWeight: FontWeight.bold))],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 3. Widget para la vista a pantalla completa (Restaurado)
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+  final String heroTag;
+
+  const _FullScreenImageViewer({required this.imageUrl, required this.heroTag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Center(
+          child: Hero(
+            tag: heroTag,
+            child: InteractiveViewer(
+              child: Image.network(imageUrl),
             ),
           ),
         ),
