@@ -1,16 +1,28 @@
-# fenix
+# Fénix | Sistema de Gestión y Notificación Universitaria
 
-A new Flutter project.
+> proyecto creado para la **UAM Cuajimalpa**.
 
-## Getting Started
+Fénix es una plataforma móvil diseñada para resolver la fragmentación de la comunicación institucional. El sistema centraliza la gestión de cursos, notificaciones académicas y acceso a servicios estudiantiles en una sola interfaz segura y eficiente.
 
-This project is a starting point for a Flutter application.
+## Galería de la Aplicación (MVP)
 
-A few resources to get you started if this is your first Flutter project:
+| Acceso Seguro | Panel Principal | Interacción Social |
+| :---: | :---: | :---: |
+| ![Login](docs/login.png) | ![Principal](docs/principal.png) | ![Redes](docs/redes.png) |
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Logro Técnico e Integración
+Este proyecto representa un ciclo de desarrollo completo (Full-Stack), desde el diseño de la base de datos relacional hasta la implementación de la interfaz móvil. 
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Características principales:**
+- **Autenticación Robusta:** Flujo de inicio de sesión seguro vinculado a perfiles de usuario.
+- **Arquitectura de Base de Datos:** Implementación en Supabase con lógica de seguridad a nivel de fila (RLS).
+- **Gestión de Cursos:** Sistema dinámico para que profesores emitan notificaciones y alumnos consulten su oferta académica.
+- **Enfoque en UX:** Interfaz limpia con acceso rápido a herramientas esenciales (Calendario, Credencial Digital).
+
+## Stack Tecnológico
+- **Frontend:** Flutter & Dart (Arquitectura desacoplada).
+- **Backend:** Supabase (PostgreSQL).
+- **Gestión de Estado:** `Provider` para una reactividad eficiente.
+- **Seguridad:** Manejo de variables de entorno para protección de credenciales.
+
+---
